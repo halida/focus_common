@@ -1,18 +1,20 @@
 namespace :systemd do
 
   [:start, :stop, :restart].each do |cmd|
-    task "app_#{cmd}" do
+    task "rails_#{cmd}", :app do |t, args|
       on roles(:app), in: :sequence, wait: 5 do
         within release_path do
-          execute "sudo systemctl #{cmd} rails_#{fetch(:application)}"
+          app_name = args[:app] || fetch(:application)
+          execute "sudo systemctl #{cmd} rails_#{app_name}"
         end
       end
     end
 
-    task "sidekiq_#{cmd}" do
-      on roles(:app), in: :sequence, wait: 5 do
+    task "sidekiq_#{cmd}", [:app] do
+      on roles(:app), in: :sequence, wait: 5 do |t, args|
         within release_path do
-          execute "sudo systemctl #{cmd} sidekiq_#{fetch(:application)}"
+          app_name = args[:app] || fetch(:application)
+          execute "sudo systemctl #{cmd} sidekiq_#{app_name}"
         end
       end
     end
