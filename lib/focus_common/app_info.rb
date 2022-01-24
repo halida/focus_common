@@ -52,7 +52,7 @@ class FocusCommon::AppInfo
           session_zone: db_time_info[:zone].try(:second),
         },
       },
-      important_gems: get_gems.map{|g| [g.name, g.version]}.to_h.slice('sidekiq'),
+      important_gems: get_gems.map{|g| [g.name, g.version]}.to_h.slice(*self.important_gems),
     }
 
     if defined?(CbaDB)
@@ -64,6 +64,14 @@ class FocusCommon::AppInfo
     end
 
     info
+  end
+
+  def important_gems
+    ['sidekiq',
+     'grape',
+     'elasticsearch',
+     'twitter-bootstrap-rails',
+    ]
   end
 
   def get_gems
