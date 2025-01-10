@@ -11,6 +11,16 @@ class FocusCommon::AppInfo
     end
   end
 
+  def get_database_info
+    conn = ActiveRecord::Base.connection
+    if conn.class.name.demodulize == 'Mysql2Adapter'
+      {version: conn.select_value("SELECT @@version"),
+      }
+    else
+      {}
+    end
+  end
+
   def git_version
     if Rails.env.development?
       `git rev-parse HEAD`
@@ -36,6 +46,7 @@ class FocusCommon::AppInfo
         ruby: RUBY_VERSION,
         rails: Rails::VERSION::STRING,
         git: git_version,
+        database: self.get_database_info[:version],
       },
       time: {
         system: {
@@ -55,10 +66,10 @@ class FocusCommon::AppInfo
       important_gems: get_gems.map{|g| [g.name, g.version]}.to_h.slice(*self.important_gems),
     }
 
-    if defined?(CbaDB)
+    if defined?(CbaDb)
       info[:cba_site] = \
-      CbaDB.enabled_sites.map do |site|
-        namespace = CbaDB.sites_info.fetch(site, {})[:db_name]
+      CbaDb.enabled_sites.map do |site|
+        namespace = CbaDb.sites_info.fetch(site, {})[:db_name]
         [site, namespace]
       end.to_h
     end
