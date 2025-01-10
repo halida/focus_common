@@ -1,7 +1,7 @@
 build:
 	gem build focus_common.gemspec
 
-upload:
+upload: clear build
 	gem push *.gem
 
 clear:
