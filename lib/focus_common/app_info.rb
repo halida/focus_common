@@ -13,12 +13,26 @@ class FocusCommon::AppInfo
 
   def get_database_info
     conn = ActiveRecord::Base.connection
-    if conn.class.name.demodulize == 'Mysql2Adapter'
-      {version: conn.select_value("SELECT @@version"),
-      }
+    adapter = conn.adapter_name
+
+    sql = \
+    case adapter
+    when "MSSQL"
+      "SELECT @@VERSION"
+    when "MySQL", "Mysql2", "PostgreSQL"
+      "SELECT VERSION()"
+    when "SQLServer"
+      "SELECT @@VERSION"
+    when "OracleEnhanced"
+      "SELECT * FROM V$VERSION"
+    when "SQLite"
+      "SELECT SQLITE_VERSION()"
     else
-      {}
+      nil
     end
+
+    v = sql ? conn.select_value(sql) : nil
+    {version: v}
   end
 
   def git_version
